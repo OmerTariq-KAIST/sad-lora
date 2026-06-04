@@ -1,0 +1,74 @@
+# Experiment 2: RoBERTa Knowledge Distillation on GLUE
+# Main NLU benchmark. 6 tasks x 5 ranks x 7 methods x 3 seeds.
+
+experiment:
+  name: "roberta_glue"
+  type: "nlp_classification"
+
+model:
+  # KD teacher: roberta-large provides soft labels (L_KD)
+  teacher_name: "roberta-large"
+  teacher_checkpoint: "/data/Omer/saved_checkpoints/sad_lora_results/teachers/roberta-large-{task}"
+  # Spectral teacher: same architecture as student — delta_W lives in student's weight space
+  spectral_teacher_name: "roberta-base"
+  spectral_teacher_checkpoint: "/data/Omer/saved_checkpoints/sad_lora_results/teachers/roberta-base-{task}"
+  student_name: "roberta-base"
+
+data:
+  dataset_name: "glue"
+  tasks: ["rte", "qnli"]
+  max_seq_length: 128
+
+lora:
+  target_modules: ["query", "value"]
+  ranks_to_test: [16, 8]
+  auto_rank: false
+  auto_rank_energy_threshold: 0.01
+  lora_dropout: 0.05
+  init_method: "kaiming"
+
+spectral:
+  r_max: 64
+  use_randomized_svd: true
+  n_calibration: 1024
+  covariance_method: "empirical_shrinkage"
+  use_implicit_svd: true
+
+loss:
+  alpha: 1.0
+  beta: 0.1
+  temperature: 4.0
+  kd_loss_type: "kl_div"
+  coeff_loss_type: "mse"
+  adaptive_schedule: true
+  normalize_coeff_loss: true
+
+training:
+  num_epochs: 10
+  batch_size: 32
+  learning_rate: 2e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: true
+  seeds: [42, 43, 44]
+
+evaluation:
+  eval_steps: 500
+  spectral_analysis_steps: 2000
+  intruder_threshold: 0.1
+
+methods:
+  - name: "standard_kd_lora"
+    description: "KL-divergence KD with standard LoRA"
+  - name: "feature_kd_lora"
+    description: "Feature-based KD + LoRA"
+  - name: "neural_nuggets_init"
+    description: "SVD-based init + standard KD"
+  - name: "pissa_init"
+    description: "PiSSA init + standard KD"
+  - name: "sad_lora"
+    description: "SAD-LoRA (ours)"
+  - name: "sad_lora_no_coeff"
+    description: "Ablation: alignment only"
+  - name: "sad_lora_no_align"
+    description: "Ablation: coefficient only"

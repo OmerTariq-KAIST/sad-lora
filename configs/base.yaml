@@ -1,0 +1,77 @@
+# SAD-LoRA Default Configuration
+# All experiment configs inherit from this base.
+
+model:
+  teacher_name: "roberta-large"
+  student_name: "roberta-base"
+  teacher_checkpoint: null
+  pretrained_checkpoint: null
+
+lora:
+  target_modules:
+    - "query"
+    - "value"
+  default_rank: 8
+  auto_rank: true
+  auto_rank_energy_threshold: 0.01
+  auto_rank_min: 1
+  auto_rank_max: 64
+  lora_alpha_equals_r: true
+  lora_dropout: 0.05
+  init_method: "kaiming"
+
+spectral:
+  r_max: 64
+  use_randomized_svd: true
+  n_calibration: 1024
+  calibration_batch_size: 32
+  covariance_method: "empirical_shrinkage"
+  use_implicit_svd: true
+  cache_dir: "/data/Omer/saved_checkpoints/sad_lora_results/spectral_cache/"
+
+loss:
+  alpha: 1.0
+  beta: 0.1
+  temperature: 4.0
+  kd_loss_type: "kl_div"
+  coeff_loss_type: "mse"
+  adaptive_schedule: true
+  normalize_coeff_loss: true
+
+training:
+  num_epochs: 10
+  max_steps: null
+  batch_size: 32
+  gradient_accumulation_steps: 1
+  learning_rate: 2e-4
+  weight_decay: 0.01
+  lr_scheduler: "cosine"
+  warmup_ratio: 0.06
+  max_grad_norm: 1.0
+  fp16: true
+  spectral_loss_fp32: true
+  seed: 42
+
+data:
+  dataset_name: "glue"
+  task_name: "sst2"
+  max_seq_length: 128
+  num_workers: 4
+
+evaluation:
+  eval_steps: 500
+  spectral_analysis_steps: 1000
+  intruder_threshold: 0.1
+  compute_error_decomposition: true
+  forgetting_benchmarks:
+    - "wikitext-2"
+    - "lambada"
+
+logging:
+  project_name: "sad-lora"
+  run_name: null
+  log_steps: 50
+  use_wandb: true
+  save_checkpoints: true
+  checkpoint_dir: "/data/Omer/saved_checkpoints/sad_lora_results/checkpoints/"
+  save_spectral_snapshots: true

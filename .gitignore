@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Results, figures, tables, paper — not part of the public code release
+results-sad-lora/
+
+# Run logs
+*.log
+
+# Session/context files (long date-prefixed filenames)
+2026-*.txt
+2025-*.txt
+
+# Visualization/analysis scripts (kept in results-sad-lora, not main code)
+experiments/plot_*.py
+
+# Checkpoints and saved models
+*.pt
+*.pth
+*.bin
+*.safetensors
+checkpoints/
+outputs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Wandb
+wandb/
+
+# HuggingFace cache
+.cache/

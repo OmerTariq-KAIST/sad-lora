@@ -1,0 +1,63 @@
+# V3 alpha sweep: lower alpha for NoCoeff on lagging tasks (sst2, mrpc, rte).
+# Goal: close gap to PiSSA/NN-Init by reducing L_align regularization burden.
+# V2 used alpha=0.2 — KD signal on these tasks is strong, explicit alignment pressure hurts.
+# V3 uses alpha=0.05 — spectral init provides structural alignment; loss is a soft anchor only.
+# Output: roberta_glue_v3/ — aggregate_glue.py prefers v3 for NoCoeff on these 3 tasks.
+
+experiment:
+  name: "roberta_glue_v3"
+  type: "nlp_classification"
+
+model:
+  teacher_name: "roberta-large"
+  teacher_checkpoint: "/data/Omer/saved_checkpoints/sad_lora_results/teachers/roberta-large-{task}"
+  spectral_teacher_name: "roberta-base"
+  spectral_teacher_checkpoint: "/data/Omer/saved_checkpoints/sad_lora_results/teachers/roberta-base-{task}"
+  student_name: "roberta-base"
+
+data:
+  dataset_name: "glue"
+  tasks: ["sst2", "mrpc", "rte"]
+  max_seq_length: 128
+
+lora:
+  target_modules: ["query", "value"]
+  ranks_to_test: [4, 8, 16]
+  auto_rank: false
+  auto_rank_energy_threshold: 0.01
+  lora_dropout: 0.05
+  init_method: "kaiming"
+
+spectral:
+  r_max: 64
+  use_randomized_svd: true
+  n_calibration: 1024
+  covariance_method: "empirical_shrinkage"
+  use_implicit_svd: true
+
+loss:
+  alpha: 0.05        # Reduced from 0.2 — let KD dominate; spectral init already provides alignment
+  beta: 0.0          # NoCoeff variant: no coefficient matching
+  temperature: 4.0
+  kd_loss_type: "kl_div"
+  coeff_loss_type: "mse"
+  adaptive_schedule: false
+  normalize_coeff_loss: true
+
+training:
+  num_epochs: 10
+  batch_size: 32
+  learning_rate: 2e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: true
+  seeds: [42, 43, 44]
+
+evaluation:
+  eval_steps: 500
+  spectral_analysis_steps: 2000
+  intruder_threshold: 0.1
+
+methods:
+  - name: "sad_lora_no_coeff"
+    description: "SAD-LoRA w/o L_coeff, alpha=0.05 (lower alignment pressure)"

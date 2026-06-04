@@ -1,0 +1,55 @@
+# Experiment 4: Llama Instruction Tuning
+# Scale-up validation: Llama-3.1-8B-Instruct -> Llama-3.2-1B + LoRA
+
+experiment:
+  name: "llama_instruction"
+  type: "nlp_generation"
+
+model:
+  teacher_name: "meta-llama/Llama-3.1-8B-Instruct"
+  student_name: "meta-llama/Llama-3.2-1B"
+  teacher_checkpoint: null
+
+data:
+  dataset_name: "tatsu-lab/alpaca"
+  max_seq_length: 512
+
+lora:
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+  ranks_to_test: [4, 16]
+  auto_rank: true
+  auto_rank_energy_threshold: 0.01
+  auto_rank_min: 2
+  auto_rank_max: 32
+  lora_dropout: 0.05
+
+spectral:
+  r_max: 64
+  use_randomized_svd: true
+  n_calibration: 1024
+  covariance_method: "empirical_shrinkage"
+  use_implicit_svd: true
+
+loss:
+  alpha: 1.0
+  beta: 0.1
+  temperature: 2.0
+  kd_loss_type: "kl_div"
+  coeff_loss_type: "mse"
+  adaptive_schedule: true
+  top_k_kd: 128
+
+training:
+  num_epochs: 3
+  batch_size: 4
+  gradient_accumulation_steps: 8
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: true
+  seeds: [42, 43, 44]
+
+evaluation:
+  eval_steps: 500
+  spectral_analysis_steps: 1000
+  benchmarks: ["mt_bench", "mmlu_5shot", "alpaca_eval"]

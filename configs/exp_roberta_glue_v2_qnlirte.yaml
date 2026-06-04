@@ -1,0 +1,67 @@
+# SAD-LoRA v2 fix — qnli and rte tasks only.
+# Identical settings to exp_roberta_glue_v2.yaml; separate file so a second
+# process can run qnli/rte while PID 1188142 handles sst2/mrpc/stsb/cola.
+# Both processes write to the same output dir (roberta_glue_v2/); run_ids are
+# unique per (task, rank, method, seed) so there is no conflict.
+
+experiment:
+  name: "roberta_glue_v2"
+  type: "nlp_classification"
+
+model:
+  teacher_name: "roberta-large"
+  teacher_checkpoint: "/data/Omer/saved_checkpoints/sad_lora_results/teachers/roberta-large-{task}"
+  spectral_teacher_name: "roberta-base"
+  spectral_teacher_checkpoint: "/data/Omer/saved_checkpoints/sad_lora_results/teachers/roberta-base-{task}"
+  student_name: "roberta-base"
+
+data:
+  dataset_name: "glue"
+  tasks: ["qnli", "rte"]
+  max_seq_length: 128
+
+lora:
+  target_modules: ["query", "value"]
+  ranks_to_test: [1, 2, 4, 8, 16]
+  auto_rank: false
+  auto_rank_energy_threshold: 0.01
+  lora_dropout: 0.05
+  init_method: "kaiming"  # overridden per-method in run script
+
+spectral:
+  r_max: 64
+  use_randomized_svd: true
+  n_calibration: 1024
+  covariance_method: "empirical_shrinkage"
+  use_implicit_svd: true
+
+loss:
+  alpha: 0.2
+  beta: 0.05
+  temperature: 4.0
+  kd_loss_type: "kl_div"
+  coeff_loss_type: "mse"
+  adaptive_schedule: false
+  normalize_coeff_loss: true
+
+training:
+  num_epochs: 10
+  batch_size: 32
+  learning_rate: 2e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: true
+  seeds: [42, 43, 44]
+
+evaluation:
+  eval_steps: 500
+  spectral_analysis_steps: 2000
+  intruder_threshold: 0.1
+
+methods:
+  - name: "sad_lora"
+    description: "SAD-LoRA (spectral init + L_align + L_coeff)"
+  - name: "sad_lora_no_coeff"
+    description: "SAD-LoRA w/o L_coeff (spectral init + L_align only)"
+  - name: "sad_lora_no_align"
+    description: "SAD-LoRA w/o L_align (spectral init + L_coeff only)"
