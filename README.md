@@ -8,6 +8,12 @@ Official implementation of **SAD-LoRA**, accepted at ICML 2026.
 
 SAD-LoRA distills a teacher model into a LoRA-adapted student by aligning the adapter's column space with the **data-weighted spectral subspace** of the teacher update. This eliminates the dominant source of low-rank distillation error — subspace misalignment — without changing the student architecture or adding inference-time overhead.
 
+
+## Architecture
+<img width="5632" height="2872" alt="SAD-LoRA" src="https://github.com/user-attachments/assets/3bf7223b-daf1-4878-be3f-5ba822f9522c" />
+
+
+
 ---
 
 ## Method
