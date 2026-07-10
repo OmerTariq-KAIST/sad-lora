@@ -141,4 +141,12 @@ pytest tests/ -v
 
 ## Citation
 
-Coming soon.
+@misc{tariq2026sadloraspectralalignmentlowrank,
+      title={SAD-LoRA: Spectral Alignment for Low-Rank Knowledge Distillation}, 
+      author={Omer Tariq and Syed Muhammad Raza and Jeongbae Son},
+      year={2026},
+      eprint={2607.04306},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2607.04306}, 
+}
