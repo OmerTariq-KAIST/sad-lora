@@ -4,7 +4,6 @@ Official implementation of **SAD-LoRA**, accepted at ICML 2026.
 
 > **SAD-LoRA: Spectral Alignment for Low-Rank Knowledge Distillation**  
 > Omer Tariq  
-> *ICML 2026 — CoLoRAI Workshop (Compression, LoRA, and Representation Alignment)*
 
 SAD-LoRA distills a teacher model into a LoRA-adapted student by aligning the adapter's column space with the **data-weighted spectral subspace** of the teacher update. This eliminates the dominant source of low-rank distillation error — subspace misalignment — without changing the student architecture or adding inference-time overhead.
 
